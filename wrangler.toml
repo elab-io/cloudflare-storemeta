@@ -1,0 +1,11 @@
+name = "store-meta-data"
+type = "webpack"
+zone_id = "d30b78e4dcf3be7c89cc89996b10dbee"
+private = false
+account_id = "742b2bb33be75b8072b6fc719dff3909"
+route = "https://nytui.com/store/*"
+
+
+[[kv-namespaces]]
+binding = "STORE_METADATA"
+id = "7dd87c32fc1f4493a32d82141abfa48b"
