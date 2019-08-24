@@ -86,16 +86,44 @@ async function getStoreInfo(request) {
 
 
 addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request))
+  event.respondWith(handleRequest(event))
 })
 
 /**
  * Fetch and log a request
  * @param {Request} request
  */
-async function handleRequest(request) {
+async function handleRequest(event) {
 
 
-  return getStoreInfo(request);
+  // Cache API for getting data
+  let request = event.request
+  let cache = caches.default
+
+  let response = await cache.match(request)
+  
+  if (!response) {
+    let requestUrl = new URL(event.request.url)
+    let tags = []
+    let dirs = requestUrl.pathname.split("/")
+ 
+    // Drop first and last element so that we only get necessary parts of the path
+    dirs = dirs.slice(1, -1)
+    
+    // Cache tags are comma delimited, so we should encode commas
+    dirs = dirs.map(encodeURIComponent)
+     
+    for (let i = 0; i < dirs.length; i++) {
+      tags[i] = requestUrl.hostname + "/" + dirs.slice(0, i+1).join("/") + "/*"
+    }
+
+    response = await getStoreInfo(request)
+    response = new Response(response.body, response)
+    response.headers.append('Cache-Tag', tags.join(','))
+    event.waitUntil(cache.put(request, response.clone()))
+  }
+
+
+  return response;
 
 }
